@@ -10,50 +10,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- FIX 1: Tailwind config must be defined BEFORE the CDN script to guarantee execution -->
+    <!-- FIX: Tailwind CDN MUST load first before the configuration -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind = {
-            config: {
-                darkMode: 'class', // Enabling class-based dark mode for the toggle
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        tailwind.config = {
+            darkMode: 'class', // Enabling class-based dark mode for the toggle
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        // Custom Claymorphism Palette mapped to CSS variables for dynamic theming
+                        clayBg: 'var(--clay-bg)',
+                        claySurface: 'var(--clay-surface)',
+                        claySurfaceHover: 'var(--clay-surfaceHover)',
+                        brandText: 'var(--brandText)',
+                        brandMuted: 'var(--brandMuted)',
+                        clayAccent: 'var(--clay-accent)',
+                        clayAccentHover: 'var(--clay-accentHover)',
+                        clayRed: 'var(--clay-red)',
+                    },
+                    animation: {
+                        'float-slow': 'float 8s ease-in-out infinite',
+                        'float-medium': 'float 6s ease-in-out infinite reverse',
+                        'float-fast': 'float 4s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 4s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 8s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-20px) rotate(5deg)' },
                         },
-                        colors: {
-                            // Custom Claymorphism Palette mapped to CSS variables for dynamic theming
-                            clayBg: 'var(--clay-bg)',
-                            claySurface: 'var(--clay-surface)',
-                            claySurfaceHover: 'var(--clay-surfaceHover)',
-                            brandText: 'var(--brandText)',
-                            brandMuted: 'var(--brandMuted)',
-                            clayAccent: 'var(--clay-accent)',
-                            clayAccentHover: 'var(--clay-accentHover)',
-                            clayRed: 'var(--clay-red)',
-                        },
-                        animation: {
-                            'float-slow': 'float 8s ease-in-out infinite',
-                            'float-medium': 'float 6s ease-in-out infinite reverse',
-                            'float-fast': 'float 4s ease-in-out infinite',
-                            'pulse-glow': 'pulseGlow 4s ease-in-out infinite alternate',
-                            'spin-slow': 'spin 8s linear infinite',
-                        },
-                        keyframes: {
-                            float: {
-                                '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
-                                '50%': { transform: 'translateY(-20px) rotate(5deg)' },
-                            },
-                            pulseGlow: {
-                                '0%': { opacity: '0.6', transform: 'translate(-50%, -50%) scale(0.95)' },
-                                '100%': { opacity: '1', transform: 'translate(-50%, -50%) scale(1.05)' },
-                            }
+                        pulseGlow: {
+                            '0%': { opacity: '0.6', transform: 'translate(-50%, -50%) scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'translate(-50%, -50%) scale(1.05)' },
                         }
                     }
                 }
             }
-        };
+        }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         :root {
@@ -210,7 +208,8 @@
             inset: 0;
             border-radius: inherit;
             padding: 1px;
-        
+            background: linear-gradient(135deg, var(--shadow-inset-light) 0%, rgba(255,255,255,0) 40%, var(--shadow-inset-dark) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
@@ -403,7 +402,7 @@
         /* Enhanced Brighter Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, var(--brandText) 0%, #8b5cf6 40%, #f43f5e 80%, #06b6d4 100%);
-            
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 200% auto;
             animation: textShine 5s linear infinite;
@@ -438,7 +437,7 @@
         }
     </style>
     
-    <!-- FIX: Fallback to ensure content is visible even if JavaScript crashes entirely -->
+    <!-- Safety fallback if JS is completely disabled -->
     <noscript>
         <style>
             .reveal {
@@ -462,7 +461,7 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <!-- NEW: Small Dark Mode Toggle Button refined to be strictly "small small" and polished -->
+                <!-- Small Dark Mode Toggle Button -->
                 <button id="theme-toggle" class="clay-btn w-9 h-9 flex items-center justify-center p-0 hidden md:flex group focus:outline-none hover:scale-105 active:scale-95 transition-transform" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
                     <svg class="w-4 h-4 theme-toggle-icon text-brandText group-hover:text-purple-500 transition-colors hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -773,9 +772,6 @@
         const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
         const htmlElement = document.documentElement;
 
-        // FIX 2: Wrapped localStorage in a safe try-catch block
-        // Without this, strict environments (like some GitHub Pages setups or adblockers) 
-        // throw a SecurityError which completely halted JS, leaving all .reveal elements hidden.
         let savedTheme = null;
         try {
             savedTheme = localStorage.getItem('theme');
