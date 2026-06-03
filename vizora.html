@@ -10,10 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- FIX: Tailwind CDN MUST load first before the configuration -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FIX 1: Bulletproof Tailwind Configuration for GitHub Pages -->
     <script>
-        tailwind.config = {
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
             darkMode: 'class', // Enabling class-based dark mode for the toggle
             theme: {
                 extend: {
@@ -50,8 +50,9 @@
                     }
                 }
             }
-        }
+        };
     </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         :root {
@@ -209,7 +210,7 @@
             border-radius: inherit;
             padding: 1px;
             background: linear-gradient(135deg, var(--shadow-inset-light) 0%, rgba(255,255,255,0) 40%, var(--shadow-inset-dark) 100%);
-            /* SOLVED VS CODE WARNINGS: Added standard 'mask' property alongside '-webkit-mask' */
+            /* SOLVED VS CODE WARNINGS: Maintained standard 'mask' property alongside '-webkit-mask' */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
@@ -389,14 +390,20 @@
                 0 0 0 6px rgba(139, 92, 246, 0.25); /* Animated brighter outer glow */
         }
 
-        /* Reveal Animation */
+        /* FIX 2: Reveal Animation - Bulletproof Fallback
+           By default, everything is VISIBLE. We only hide them (opacity 0) if JavaScript 
+           successfully loads and adds the 'js-running' class to the body.
+           This absolutely prevents the blank white screen issue. */
         .reveal {
-            opacity: 0;
-            transform: translateY(40px) scale(0.98);
             transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        
+        .js-running .reveal {
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+        }
 
-        .reveal.active {
+        .js-running .reveal.active {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
@@ -404,7 +411,7 @@
         /* Enhanced Brighter Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, var(--brandText) 0%, #8b5cf6 40%, #f43f5e 80%, #06b6d4 100%);
-            /* SOLVED VS CODE WARNINGS: Added standard 'background-clip' and 'color' */
+            /* SOLVED VS CODE WARNINGS: Maintained standard 'background-clip' and 'color' */
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -441,16 +448,6 @@
             transform: rotate(360deg);
         }
     </style>
-    
-    <!-- Safety fallback if JS is completely disabled -->
-    <noscript>
-        <style>
-            .reveal {
-                opacity: 1 !important;
-                transform: translateY(0) scale(1) !important;
-            }
-        </style>
-    </noscript>
 </head>
 <body class="antialiased selection:bg-purple-500 selection:text-white relative transition-colors duration-500">
 
@@ -772,6 +769,11 @@
     </footer>
 
     <script>
+        // --- Initialization Safety ---
+        // This instantly adds the 'js-running' class. If JS breaks right after this, 
+        // the default CSS keeps elements completely visible instead of a blank page.
+        document.body.classList.add('js-running');
+
         // --- Dark Mode Logic ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
@@ -799,8 +801,8 @@
             } catch (e) {} // Fail silently if storage is blocked
         };
 
-        themeToggleBtn.addEventListener('click', toggleTheme);
-        mobileThemeToggleBtn.addEventListener('click', toggleTheme);
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+        if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener('click', toggleTheme);
 
 
         // --- Mobile Menu Toggle with Smooth Animation Fix ---
@@ -809,38 +811,42 @@
         const menuIcon = document.getElementById('menu-icon');
         let isMenuOpen = false;
         
-        btn.addEventListener('click', () => {
-            isMenuOpen = !isMenuOpen;
-            if(isMenuOpen){
-                menu.classList.remove('invisible', 'opacity-0', '-translate-y-4');
-                menu.classList.add('opacity-100', 'translate-y-0');
-                menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
-            } else {
-                menu.classList.add('opacity-0', '-translate-y-4');
-                menu.classList.remove('opacity-100', 'translate-y-0');
-                setTimeout(() => menu.classList.add('invisible'), 300); // Wait for transition
-                menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
-            }
-        });
+        if (btn && menu && menuIcon) {
+            btn.addEventListener('click', () => {
+                isMenuOpen = !isMenuOpen;
+                if(isMenuOpen){
+                    menu.classList.remove('invisible', 'opacity-0', '-translate-y-4');
+                    menu.classList.add('opacity-100', 'translate-y-0');
+                    menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+                } else {
+                    menu.classList.add('opacity-0', '-translate-y-4');
+                    menu.classList.remove('opacity-100', 'translate-y-0');
+                    setTimeout(() => menu.classList.add('invisible'), 300); // Wait for transition
+                    menuIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+                }
+            });
+        }
 
         // Close mobile menu when clicking a link
         document.querySelectorAll('#mobile-menu a').forEach(link => {
             link.addEventListener('click', () => {
-                if(isMenuOpen) btn.click();
+                if(isMenuOpen && btn) btn.click();
             });
         });
 
         // --- Dynamic Nav sizing on scroll ---
         const navContainer = document.getElementById('navbar-container');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navContainer.classList.remove('pt-6');
-                navContainer.classList.add('pt-2');
-            } else {
-                navContainer.classList.add('pt-6');
-                navContainer.classList.remove('pt-2');
-            }
-        });
+        if (navContainer) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navContainer.classList.remove('pt-6');
+                    navContainer.classList.add('pt-2');
+                } else {
+                    navContainer.classList.add('pt-6');
+                    navContainer.classList.remove('pt-2');
+                }
+            });
+        }
 
         // --- Subtle Mouse Parallax Effect for Hero Glow ---
         document.addEventListener('mousemove', (e) => {
