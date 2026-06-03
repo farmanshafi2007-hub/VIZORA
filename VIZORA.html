@@ -210,8 +210,7 @@
             inset: 0;
             border-radius: inherit;
             padding: 1px;
-            background: linear-gradient(135deg, var(--shadow-inset-light) 0%, rgba(255,255,255,0) 40%, var(--shadow-inset-dark) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
@@ -404,7 +403,7 @@
         /* Enhanced Brighter Gradient Text */
         .gradient-text {
             background: linear-gradient(135deg, var(--brandText) 0%, #8b5cf6 40%, #f43f5e 80%, #06b6d4 100%);
-            -webkit-background-clip: text;
+            
             -webkit-text-fill-color: transparent;
             background-size: 200% auto;
             animation: textShine 5s linear infinite;
